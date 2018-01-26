@@ -138,3 +138,57 @@ void createBlocks(int u, vector<vector<int> > &edges, int &count,
         }
     }
 }
+/*-------------------------------------------------------------------------
+    Functions used during the second DFS
+    Traversing occurs block -> cut vertex -> block -> ...
+    ind       - Index of block/vertex being traversed
+    vst       - List of whether a node has been visited
+    blocks    - List of blocks
+    v         - List of vertices
+    graph     - List containing vertex count of each component
+    returns the number of vertices traversed so far
+  -------------------------------------------------------------------------*/
+int vertexDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &v, vector<int> &graph);
+int blockDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &v, vector<int> &graph);
+
+int vertexDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &v, vector<int> &graph)
+{
+    // Keep a count of vertices
+    ll c = 1;
+    // We've visited this vertex
+    vst[ind + blocks.size() - 1] = true;
+    // Try to identify largest group
+    int maxi = 0;
+    for(int i = 0; i < v[ind].block.size(); ++i)
+    {
+        // Visit unvisited blocks
+        if(!vst[v[ind].block[i]])
+        {
+            // Get number of vertices in the block
+            int num = blockDFS(v[ind].block[i], vst, blocks, v, graph) - 1;
+            maxi = max(num, maxi);
+            c += num;
+        }
+    }
+    // Make impact the number of vertices not in largest connected component
+    maxi = max(maxi, graph[v[ind].graph] - c);
+    v[ind].impact = graph[v[ind].graph] - maxi;
+    return c;
+}
+
+ll blockDFS(ll ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &v, vector<ll> &graph)
+{
+    ll c = blocks[ind].size;
+    // Mark this block as visited
+    vst[ind] = true;
+    for(int i = 0; i < blocks[ind].cutVertices.size(); ++i)
+    {
+        // Visit cut vertices
+        if(!vst[blocks.size() + blocks[ind].cutVertices[i] - 1])
+        {
+            c += vertexDFS(blocks[ind].cuts[i], vst, blocks, v, graph) - 1;
+        }
+    }
+    return c;
+}
+
