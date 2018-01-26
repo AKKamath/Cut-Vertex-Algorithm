@@ -47,4 +47,94 @@ struct block
         size = _s;
     }
 };
-
+/*-------------------------------------------------------------------------
+    Create the main block diagram using DFS
+    u         - Index of vertex currently being traversed
+    edges     - Adjacency list of graph
+    count     - Used to keep track of DFS timings
+    vertNum   - List to keep track of when each vertex was traversed
+    parent    - List to maintain which vertex called function for which node
+    low       - List of smallest time encountered by each vertex
+    edgeStack - Stack keeping track of edges traversed
+    v         - List of all vertices present in graph
+    blocks    - List of blocks (to be added to)
+    graph     - Index of current component being traversed
+  -------------------------------------------------------------------------*/
+void createBlocks(int u, vector<vector<int> > &edges, int &count, 
+    vector<int> &vertNum, vector<int> &parent, vector<int> &low, 
+    stack<edge> &edgeStack, vector<vertex> &v, vector<block> &blocks, int graph)
+{
+    // Set component of current vertex
+    v[u].graph = graph;
+    // Increment time and set it for vertex
+    ++count;
+    vertNum[u] = count;
+    // Traverse edges of vertex u
+    for(int i = 0; i < edges[u].size(); ++i)
+    {
+        int w = edges[u][i];
+        // Vertex has not yet been traversed
+        if(vertNum[w] == 0)
+        {
+            // Set parent and insert edge into stack
+            parent[w] = u;
+            edgeStack.push(edge(u, w));
+            // Smallest time encountered so far
+            low[w] = vertNum[u];
+            // Recurse for vertex w
+            createBlocks(w, edges, count, vertNum, parent, low, edgeStack, v, blocks, graph);
+            // Vertex traversal did not encounter an ancestor of u
+            if(low[w] == vertNum[u])
+            {
+                // Keep track of vertices added to block
+                unordered_set<int> vs;
+                int c = 0;
+                // Pop from stack until initially traversed edge encountered
+                while(!s.empty())
+                {
+                    edge e = s.top();
+                    s.pop();
+                    // Check if vertices already added to block
+                    if(vs.find(e.u) == vs.end())
+                    {
+                        v[e.u].block.push_back(blocks.size());
+                        ++c;
+                        vs.emplace(e.u);
+                    }
+                    if(vs.find(e.v) == vs.end())
+                    {
+                        v[e.v].block.push_back(blocks.size());
+                        ++c;
+                        vs.emplace(e.v);
+                    }
+                    // Finished traversal of edges
+                    if(e.u == u && e.v == w)
+                        break;
+                }
+                // Create block and insert details
+                blocks.push_back(block(c));
+                blocks[blocks.size() - 1].graph = graph;
+            }
+            // Ancestor of u was encountered
+            else if(low[w] < vertNum[u])
+            {
+                if(low[w] < low[u])
+                    low[u] = low[w];
+            }
+        }
+        // Already traversed this vertex
+        else
+        {
+            // See if this vertex is an ancestor of previously traversed vertex
+            if(w != parent[u])
+            {
+                if(vertNum[w] < vertNum[u])
+                {
+                    s.push(edge(u, w));
+                    if(vertNum[w] < low[u])
+                        low[u] = vertNum[w];
+                }
+            }
+        }
+    }
+}
