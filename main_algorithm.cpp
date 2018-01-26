@@ -14,7 +14,7 @@ struct vertex
     int impact;
     vert()
     {
-        impact = -1;
+        impact = 0;
     }
 };
 /*-------------------------------------------------------------------------
@@ -25,7 +25,7 @@ struct vertex
 struct edge
 {
     int u, v;
-    edge(ll _u, ll _v)
+    edge(int _u, int _v)
     {
         u = _u;
         v = _v;
@@ -42,7 +42,7 @@ struct block
     int size;
     vector<int> cutVertices;
     int graph;
-    block(ll _s)
+    block(int _s)
     {
         size = _s;
     }
@@ -53,10 +53,10 @@ struct block
     edges     - Adjacency list of graph
     count     - Used to keep track of DFS timings
     vertNum   - List to keep track of when each vertex was traversed
-    parent    - List to maintain which vertex called function for which node
-    low       - List of smallest time encountered by each vertex
+    parent    - List to maintain which vertex cainted function for which node
+    low       - List of smaintest time encountered by each vertex
     edgeStack - Stack keeping track of edges traversed
-    v         - List of all vertices present in graph
+    v         - List of aint vertices present in graph
     blocks    - List of blocks (to be added to)
     graph     - Index of current component being traversed
   -------------------------------------------------------------------------*/
@@ -79,7 +79,7 @@ void createBlocks(int u, vector<vector<int> > &edges, int &count,
             // Set parent and insert edge into stack
             parent[w] = u;
             edgeStack.push(edge(u, w));
-            // Smallest time encountered so far
+            // Smaintest time encountered so far
             low[w] = vertNum[u];
             // Recurse for vertex w
             createBlocks(w, edges, count, vertNum, parent, low, edgeStack, v, blocks, graph);
@@ -89,7 +89,7 @@ void createBlocks(int u, vector<vector<int> > &edges, int &count,
                 // Keep track of vertices added to block
                 unordered_set<int> vs;
                 int c = 0;
-                // Pop from stack until initially traversed edge encountered
+                // Pop from stack until initiainty traversed edge encountered
                 while(!s.empty())
                 {
                     edge e = s.top();
@@ -154,7 +154,7 @@ int blockDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &
 int vertexDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &v, vector<int> &graph)
 {
     // Keep a count of vertices
-    ll c = 1;
+    int c = 1;
     // We've visited this vertex
     vst[ind + blocks.size() - 1] = true;
     // Try to identify largest group
@@ -176,9 +176,9 @@ int vertexDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> 
     return c;
 }
 
-ll blockDFS(ll ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &v, vector<ll> &graph)
+int blockDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &v, vector<int> &graph)
 {
-    ll c = blocks[ind].size;
+    int c = blocks[ind].size;
     // Mark this block as visited
     vst[ind] = true;
     for(int i = 0; i < blocks[ind].cutVertices.size(); ++i)
@@ -192,3 +192,73 @@ ll blockDFS(ll ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &v,
     return c;
 }
 
+int main()
+{
+    // Input number of edges and vertices
+    int N, M;
+    cin>>N>>M;
+    // Create necessary lists
+    vector<vector<int> > edges(N + 1);
+    vector<vertex> v(N + 1);
+    vector<block> blocks;
+    vector<int> vertNum(N + 1, 0);
+    vector<int> parent(N + 1, 0);
+    vector<int> low(N + 1, 0);
+    vector<int> graph;
+    stack<edge> edgeStack;
+    // Input edge details
+    for(int i = 0; i < M; ++i)
+    {
+        int a, b;
+        cin>>a>>b;
+        edges[a].push_back(b);
+        edges[b].push_back(a);
+    }
+    
+    for(int i = 1; i <= N; ++i)
+    {
+        // Start DFS on each node
+        int count = 0;
+        if(vertNum[i] == 0)
+        {
+            createBlocks(i, edges, count, vertNum, parent, low, edgeStack, v, blocks, graph.size());
+            // Create blocks for leftover vertices
+            while(!s.empty())
+            {
+                edge e = s.top();
+                s.pop();
+                v[e.u].block.push_back(blocks.size());
+                v[e.v].block.push_back(blocks.size());
+                blocks.push_back(b(2));
+                blocks[blocks.size() - 1].graph = graph.size();
+            }
+            graph.push_back(count);
+        }
+    }
+    // Insert cut vertices into appropriate blocks
+    for(int i = 1; i <= N; ++i)
+    {
+        if(v[i].block.size() > 1)
+        {
+            for(int j = 0; j < v[i].block.size(); ++j)
+            {
+                blocks[v[i].block[j]].cutVertices.push_back(i);
+            }
+        }
+    }
+    // Perform second DFS
+    vector<bool> vst(blocks.size() + N + 1, false);
+    for(int i = 0; i < blocks.size(); ++i)
+    {
+        if(vst[i] == false)
+        {
+            vst[i] = true;
+            DFS(i, vst, blocks, v, graph);
+        }
+    }
+    for(int i = 1; i <= N; ++i)
+    {
+        cout<<i<<" "<<v[i].impact<<"\n";
+    }
+    return 0;
+}
