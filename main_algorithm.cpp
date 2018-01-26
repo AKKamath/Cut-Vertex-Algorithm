@@ -258,6 +258,7 @@ int main()
             blockDFS(i, vst, blocks, v, graph);
         }
     }
+    // Output results
     for(int i = 1; i <= N; ++i)
     {
         cout<<i<<" "<<v[i].impact<<"\n";
