@@ -1,4 +1,6 @@
 #include <vector>
+#include <stack>
+#include <unordered_set>
 #include <iostream>
 using namespace std;
 /*------------------------------------------------------------------------- 
@@ -12,7 +14,7 @@ struct vertex
     int graph;
     vector<int> block;
     int impact;
-    vert()
+    vertex()
     {
         impact = 0;
     }
@@ -90,10 +92,10 @@ void createBlocks(int u, vector<vector<int> > &edges, int &count,
                 unordered_set<int> vs;
                 int c = 0;
                 // Pop from stack until initiainty traversed edge encountered
-                while(!s.empty())
+                while(!edgeStack.empty())
                 {
-                    edge e = s.top();
-                    s.pop();
+                    edge e = edgeStack.top();
+                    edgeStack.pop();
                     // Check if vertices already added to block
                     if(vs.find(e.u) == vs.end())
                     {
@@ -130,7 +132,7 @@ void createBlocks(int u, vector<vector<int> > &edges, int &count,
             {
                 if(vertNum[w] < vertNum[u])
                 {
-                    s.push(edge(u, w));
+                    edgeStack.push(edge(u, w));
                     if(vertNum[w] < low[u])
                         low[u] = vertNum[w];
                 }
@@ -172,7 +174,7 @@ int vertexDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> 
     }
     // Make impact the number of vertices not in largest connected component
     maxi = max(maxi, graph[v[ind].graph] - c);
-    v[ind].impact = graph[v[ind].graph] - maxi;
+    v[ind].impact = graph[v[ind].graph] - maxi - 1;
     return c;
 }
 
@@ -186,7 +188,7 @@ int blockDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &
         // Visit cut vertices
         if(!vst[blocks.size() + blocks[ind].cutVertices[i] - 1])
         {
-            c += vertexDFS(blocks[ind].cuts[i], vst, blocks, v, graph) - 1;
+            c += vertexDFS(blocks[ind].cutVertices[i], vst, blocks, v, graph) - 1;
         }
     }
     return c;
@@ -223,13 +225,13 @@ int main()
         {
             createBlocks(i, edges, count, vertNum, parent, low, edgeStack, v, blocks, graph.size());
             // Create blocks for leftover vertices
-            while(!s.empty())
+            while(!edgeStack.empty())
             {
-                edge e = s.top();
-                s.pop();
+                edge e = edgeStack.top();
+                edgeStack.pop();
                 v[e.u].block.push_back(blocks.size());
                 v[e.v].block.push_back(blocks.size());
-                blocks.push_back(b(2));
+                blocks.push_back(block(2));
                 blocks[blocks.size() - 1].graph = graph.size();
             }
             graph.push_back(count);
@@ -253,7 +255,7 @@ int main()
         if(vst[i] == false)
         {
             vst[i] = true;
-            DFS(i, vst, blocks, v, graph);
+            blockDFS(i, vst, blocks, v, graph);
         }
     }
     for(int i = 1; i <= N; ++i)
