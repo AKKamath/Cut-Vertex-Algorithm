@@ -194,11 +194,13 @@ int blockDFS(int ind, vector<bool> &vst, vector<block> &blocks, vector<vertex> &
     return c;
 }
 
-int main()
+int main(int argc, const char *argv[])
 {
     // Input number of edges and vertices
     int N, M;
     cin>>N>>M;
+	if(argc > 1 && string(argv[1]) == "viz")
+		cout<<N<<" "<<M<<"\n";
     // Create necessary lists
     vector<vector<int> > edges(N + 1);
     vector<vertex> v(N + 1);
@@ -213,6 +215,8 @@ int main()
     {
         int a, b;
         cin>>a>>b;
+		if(argc > 1 && string(argv[1]) == "viz")
+			cout<<a<<" "<<b<<"\n";
         edges[a].push_back(b);
         edges[b].push_back(a);
     }
